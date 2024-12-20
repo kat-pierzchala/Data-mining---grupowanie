@@ -1,1 +1,1 @@
-Grupowanie bazy danych dotyczących Pokemonów.
+Grupowanie bazy danych dotyczącej Pokemonów.
