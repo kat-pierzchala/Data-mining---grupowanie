@@ -16,13 +16,6 @@ View(pokemon)
 
 sum(is.na(pokemon))
 
-unique(pokemon$Type.1)
-unique(pokemon$Type.2)
-
-type2 <- n_distinct(pokemon$Type.2)
-type2
-table(is.na(pokemon$Type.2) | pokemon$Type.2 == "")
-
 powers = pokemon[6:11]
 View(powers)
 summary(powers)
@@ -35,9 +28,7 @@ View(powers_S)
 #==================================================================================================================
 
 # 2. Grupowanie algorytmem partycjonującym:
-
 # Wyznaczenie liczby grup dla algorytmu k-środków metodą „łokcia”
-
 
 calculate_wss <- function(data, max_clusters) {
   wss <- numeric(max_clusters)
@@ -165,7 +156,6 @@ fviz_cluster(pam_result_mx,
 
 
 # 3. Hierarchiczne klastrowanie z miarą odległości CANBERRA:
-
 cat("\nZastosowanie miary odległości: canberra")
 dist_matrix <- dist(powers_sample, method = "canberra")
 hc_result <- hclust(dist_matrix, method = "ward.D2")
@@ -234,7 +224,6 @@ pam.res <- eclust(powers_sample, "pam", k = 2, graph = TRUE)
 fviz_silhouette(pam.res, palette = "jco")
 cl_stats_pam<-cluster.stats(d = dist(powers_sample), pam.res$cluster)
 
-
 cat("Średnia wartość indeksu Silhouette dla k-means:", round(avg_silhouette, 2), "\n")
 cat("Średnia wartość indeksu Silhouette dla k-medoids:", round(avg_silhouette_p, 2), "\n")
 cat("Średnia wartość indeksu Silhouette dla eclust (k-means):", round(avg_silhouette, 2), "\n")
@@ -276,8 +265,6 @@ fviz_cluster(pam.res,
              main = "Wizualizacja grup PAM")
 
 
-# Znalezienie charakterystycznych elementów grup
-
 # Grupowanie po klastrach i obliczenie średnich wartości cech
 char_kmeans <- pokemon %>%
   group_by(Cluster_kmeans) %>%
@@ -288,7 +275,6 @@ char_pam <- pokemon %>%
   group_by(Cluster_PAM) %>%
   summarise(across(where(is.numeric), mean, na.rm = TRUE))
 print(char_pam)
-
 
 # Wykres dla k-średnich
 char_kmeans_long <- tidyr::pivot_longer(char_kmeans, cols = -Cluster_kmeans, names_to = "Feature", values_to = "Mean")
@@ -301,16 +287,13 @@ ggplot(char_kmeans_long, aes(x = Feature, y = Mean, fill = factor(Cluster_kmeans
 
 
 
-
 # Grupowanie algorytmem DBSCAN
 
 # Wyznaczenie parametru eps dla algorytmu DBSCAN metodą szukania punktu przegięcie
-
 dbscan::kNNdistplot(powers_sample, k=5)
 abline(h=0.7, lty="dashed")
 
 # Wykonanie grupowania dla kilku zestawów wartości parametrów.
-
 # Parametry DBSCAN
 eps_values <- c(0.5, 0.6, 0.7, 0.75)
 minPts_values <- c(3, 5, 7, 10)
@@ -343,7 +326,6 @@ fviz_cluster(powers_sample.dbscanBEST, data = powers_sample, geom = "point", ell
 
 
 # Ocena jakości grupowa przy użyciu indeksu Silhouette.
-
 pokemon$Cluster_DBSCAN <- powers_sample.dbscanBEST$cluster
 powers_sample_no_noise <- powers_sample[powers_sample.dbscanBEST$cluster != 0, ]
 clusters_no_noise <- powers_sample.dbscanBEST$cluster[powers_sample.dbscanBEST$cluster != 0]
@@ -355,14 +337,12 @@ cat("Średnia wartość indeksu Silhouette dla BDSCAN:", round(avg_silhouette_db
 
 
 # Przypisanie poszczególnych rekordów do grup
-
 pokemon$Cluster_DBSCAN <- powers_sample.dbscanBEST$cluster
 cat("Liczba rekordów w poszczególnych grupach DBSCAN:\n")
 print(table(pokemon$Cluster_DBSCAN))
 
 
 # Znalezienie charakterystycznych elementów grup
-
 group_summary <- pokemon %>%
   filter(Cluster_DBSCAN != 0) %>%  
   group_by(Cluster_DBSCAN) %>%
@@ -383,7 +363,6 @@ ggplot(pokemon, aes(x = HP, y = Attack, color = as.factor(Cluster_DBSCAN))) +
 
 
 # Porównanie wyników uzyskanych dwoma metodami grupowania
-
 cat("Porównanie liczby rekordów w grupach k-means i k-medoids:\n")
 table(powers_sample$cluster_kmeans)
 table(powers_sample$cluster_pam)
@@ -417,7 +396,6 @@ fviz_cluster(powers_sample.dbscanBEST, data = powers_sample, geom = "point", ell
 
 
 # Porównanie wyników grupowania do faktycznych grup w danych Pokmony: Typ i Generacja:
-
 length(pokemon$Cluster_kmeans)
 length(pokemon$Type.1)
 length(pokemon$Generation)
@@ -451,7 +429,6 @@ ggplot(generation_counts, aes(x = Generation, y = Count, fill = as.factor(Cluste
        x = "Generacja",
        y = "Liczba Pokemonów",
        fill = "Grupa k-means")
-
 
 
 # 2. DBSCAN
@@ -501,9 +478,7 @@ summary(pokemon[pokemon$Cluster_DBSCAN == 1, c("HP", "Attack", "Defense", "Speed
 summary(pokemon[pokemon$Cluster_DBSCAN == 2, c("HP", "Attack", "Defense", "Speed")])
 
 
-
 # Test chi-kwadrat dla typów i generacji Pokémonów w klastrach DBSCAN:
-
 type_cluster_table <- table(pokemon$Cluster_DBSCAN, pokemon$Type.1)
 chi_square_type <- chisq.test(type_cluster_table)
 chi_square_type
@@ -514,7 +489,6 @@ chi_square_generation
 
 # Wyniki testów chi-kwadrat wskazują, że zarówno dla typów Pokémonów, jak i generacji Pokémonów, 
 # nie ma statystycznie istotnej zależności między tymi zmiennymi a przynależnością do klastrów DBSCAN:
-
 
 
 # Obliczanie średnich dla cech w klastrach
@@ -532,15 +506,12 @@ pokemon_cluster_means
 # Test ANOVA dla HP
 anova_hp <- aov(HP ~ Cluster_DBSCAN, data = pokemon)
 summary(anova_hp)
-
 # Test ANOVA dla Attack
 anova_attack <- aov(Attack ~ Cluster_DBSCAN, data = pokemon)
 summary(anova_attack)
-
 # Test ANOVA dla Defense
 anova_defense <- aov(Defense ~ Cluster_DBSCAN, data = pokemon)
 summary(anova_defense)
-
 # Test ANOVA dla Speed
 anova_speed <- aov(Speed ~ Cluster_DBSCAN, data = pokemon)
 summary(anova_speed)
@@ -550,8 +521,3 @@ summary(anova_speed)
 # istotnych różnic między klastrami DBSCAN (wszystkie p-value > 0.05).
 # Oznacza to, że różnice w średnich wartościach tych cech w klastrach nie są statystycznie istotne, co sugeruje,
 # że klasteryzacja DBSCAN nie rozdziela Pokémonów na grupy o wyraźnie różnych wartościach tych cech.
-
-
-
-
-
